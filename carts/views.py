@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
 from store.models import Product
 from .models import Cart, CartItem
@@ -79,7 +80,7 @@ def cart(request: HttpRequest, total: int = 0, quantity: int = 0, cart_items: Ca
 
         tax = Decimal(TAX_PERCATNAGE) / 100 * total
         grand_total = total + tax
-    except ObjectNotExist:
+    except ObjectDoesNotExist:
         pass
 
     context = {
