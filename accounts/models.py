@@ -1,33 +1,30 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, first_name, last_name, username, email, password=None):
+    def create_user(self, username, email, password=None):
         if not email:
             raise ValueError('User must have an email address.')
         
         if not username:
             raise ValueError('User must have an username address.')
         
-        user = self.model(
+        user: User = self.model(
             email = self.normalize_email(email),
             username = username,
-            first_name = first_name,
-            last_name = last_name,
         )
 
         user.set_password(password)
+        user.is_active = True
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, first_name, last_name, username, email, password=None):
-        user = self.create_user(
+    def create_superuser(self, username, email, password=None):
+        user: User = self.create_user(
             email = self.normalize_email(email),
             username = username,
             password = password,
-            first_name = first_name,
-            last_name = last_name,
         )
 
         user.is_admin = True
@@ -39,13 +36,9 @@ class MyAccountManager(BaseUserManager):
         return user
 
 
-
 class Account(AbstractBaseUser):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, unique=True)
     email = models.CharField(max_length=100, unique=True)
-    phone_number = models.CharField(max_length=100)
 
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now_add=True)
@@ -55,7 +48,7 @@ class Account(AbstractBaseUser):
     is_superadmin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username']
 
     objects = MyAccountManager()
 

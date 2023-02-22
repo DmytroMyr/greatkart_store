@@ -1,16 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import QuerySet
 from decimal import Decimal
 from store.models import Product, Variations
 from .models import Cart, CartItem
 
 
-TAX_PERCATNAGE = 2
+TAX_PERCATNAGE: int = 2
 
 
-def _cart_id(request: HttpRequest) -> HttpResponse:
+def _cart_id(request: HttpRequest) -> str:
+    """
+    Helper function to get the cart id from the session key, creating a new one if necessary
+
+    Args:
+        request: An instance of `HttpRequest`.
+
+    Returns:
+        A string representing the cart id.
+    """
     cart = request.session.session_key
 
     if not cart:
@@ -20,8 +28,16 @@ def _cart_id(request: HttpRequest) -> HttpResponse:
 
 
 def add_cart(request: HttpRequest, product_id: int) -> HttpResponseRedirect:
-    """Adding a product to the cart"""
+    """
+    Adds a product to the cart or increases its quantity if it already exists in the cart
 
+    Args:
+        request: An instance of `HttpRequest`.
+        product_id: An integer representing the id of the product to add to the cart.
+
+    Returns:
+        An instance of `HttpResponseRedirect` that redirects to the cart page.
+    """
     product = Product.objects.get(id=product_id)
     product_variation = []
 
@@ -89,8 +105,17 @@ def add_cart(request: HttpRequest, product_id: int) -> HttpResponseRedirect:
 
 
 def remove_cart(request: HttpRequest, product_id: int, cart_item_id: int) -> HttpResponseRedirect:
-    """Decreasing the quantity of the product or delete it"""
+    """
+    Removes a quantity of a product from the cart or deletes it completely if the quantity is 1
 
+    Args:
+        request (HttpRequest): the HTTP request object
+        product_id (int): the id of the product to remove from the cart
+        cart_item_id (int): the id of the cart item to remove from the cart
+
+    Returns:
+        An instance of `HttpResponseRedirect` that redirects to the cart page.
+    """
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
 
@@ -109,7 +134,17 @@ def remove_cart(request: HttpRequest, product_id: int, cart_item_id: int) -> Htt
 
 
 def remove_cart_item(request: HttpRequest, product_id: int, cart_item_id: int) -> HttpResponseRedirect:
-    """Removing the item from the cart"""
+    """
+    Remove a cart item from the cart.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        product_id (int): The ID of the product to remove.
+        cart_item_id (int): The ID of the cart item to remove.
+
+    Returns:
+        An instance of `HttpResponseRedirect` that redirects to the cart page.
+    """
 
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
@@ -119,7 +154,19 @@ def remove_cart_item(request: HttpRequest, product_id: int, cart_item_id: int) -
     return redirect('cart')
 
 
-def cart(request: HttpRequest, total: int = 0, quantity: int = 0, cart_items: CartItem = None) -> HttpResponse:
+def cart(request: HttpRequest, total: int = 0, quantity: int = 0, cart_items: list[CartItem] = None) -> HttpResponse:
+    """
+    Display the contents of the cart.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        total (int, optional): The total cost of the items in the cart. Defaults to 0.
+        quantity (int, optional): The total quantity of items in the cart. Defaults to 0.
+        cart_items (List[CartItem], optional): The list of cart items. Defaults to None.
+
+    Returns:
+        HttpResponse: The rendered cart page.
+    """
     try:
         cart: Cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items: list[CartItem] = CartItem.objects.filter(cart=cart, is_active=True)
