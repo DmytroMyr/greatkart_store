@@ -48,3 +48,8 @@ def login_view(request: HttpRequest) -> HttpResponse:
 def logout_view(request: HttpRequest) -> HttpResponse:
     auth.logout(request)
     return redirect('/')
+
+
+@login_required(login_url='login')
+def dashboard_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'accounts/dashboard.html')
