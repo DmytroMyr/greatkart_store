@@ -5,6 +5,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm
 from .models import Account
+from carts.models import Cart, CartItem
+from carts.views import _cart_id
+import requests
 
 
 def registration_view(request: HttpRequest) -> HttpResponse:
@@ -35,8 +38,57 @@ def login_view(request: HttpRequest) -> HttpResponse:
         user = authenticate(email=email, password=password)
 
         if user:
+            try:
+                cart = Cart.objects.get(cart_id=_cart_id(request))
+                is_cart_item_exists = CartItem.objects.filter(cart=cart).exists()
+
+                if is_cart_item_exists:
+                    cart_item = CartItem.objects.filter(cart=cart)
+
+                    # getting the product variation by cart id
+                    product_variation = []
+                    for item in cart_item:
+                        variation = item.variation.all()
+                        product_variation.append(list(variation))
+
+                    # getting the cart_items from the user to access his product variations
+                    cart_item = CartItem.objects.filter(user=user)
+                    ex_var_list = []
+                    id_list = []
+                    for item in cart_item:
+                        existing_variation = item.variation.all()
+                        ex_var_list.append(list(existing_variation))
+                        id_list.append(item.id)
+
+                    for pr in product_variation:
+                        if pr in ex_var_list:
+                            index = ex_var_list.index(pr)
+                            item_id = id_list[index]
+                            item = CartItem.objects.get(id=item_id)
+                            item.quantity += 1
+                            item.user = user
+                            item.save()
+                        else:
+                            cart_item = CartItem.objects.filter(cart=cart)
+                            for item in cart_item:
+                                item.user = user
+                                item.save()
+            except Exception as e:
+                print(e)
+
             auth.login(request, user)
-            return redirect('home')
+            url = request.META.get('HTTP_REFERER')
+            try:
+                query: str = requests.utils.urlparse(url).query
+                params = dict(x.split("=") for x in query.split('&'))
+                if 'next' in params:
+                    next_page = params['next']
+                else:
+                    next_page = params['home']
+
+                return redirect(next_page)
+            except:
+                return redirect('home')
         else:
             messages.error(request, 'Invalid login credentials.')
             
