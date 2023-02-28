@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Variations
+from .models import Product, Variations, ReviewRating
 
 
 class VariationsAdmin(admin.TabularInline):
@@ -19,3 +19,8 @@ class AllVariationsAdmin(admin.ModelAdmin):
     list_display = ('product', 'category', 'value', 'is_active', 'created_date')
     list_editable = ('is_active',)
     list_filter = ('product', 'category', 'value', 'is_active', 'created_date')
+
+
+@admin.register(ReviewRating)
+class ReviewRatingAdmin(admin.ModelAdmin):
+    list_display = ('product', 'user', 'subject', 'review', 'rating', 'status', 'created_at', 'updated_at')
