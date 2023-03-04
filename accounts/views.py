@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm
 from .models import Account
+from orders.models import Order, OrderProduct
 from carts.models import Cart, CartItem
 from carts.views import _cart_id
 import requests
@@ -104,4 +105,36 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 @login_required(login_url='login')
 def dashboard_view(request: HttpRequest) -> HttpResponse:
-    return render(request, 'accounts/dashboard.html')
+    orders = Order.objects.filter(user_id=request.user.id, is_ordered=True)
+    orders_count = orders.count()
+    context = {
+        'orders_count': orders_count
+    }
+    return render(request, 'accounts/dashboard.html', context)
+
+
+@login_required(login_url='login')
+def my_orders_view(request):
+    orders = Order.objects.filter(user_id=request.user.id, is_ordered=True).order_by('-created_at')
+
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'accounts/my_orders.html', context)
+
+
+@login_required(login_url='login')
+def order_detail_view(request, order_id):
+    order_detail = OrderProduct.objects.filter(order__order_number=order_id)
+    order = Order.objects.get(order_number=order_id)
+    sub_total = 0
+
+    for item in order_detail:
+        sub_total += item.product_price * item.quantity
+
+    context = {
+        'order_detail': order_detail,
+        'order': order,
+        'sub_total': sub_total,
+    }
+    return render(request, 'accounts/order_detail.html', context)

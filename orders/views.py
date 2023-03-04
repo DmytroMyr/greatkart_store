@@ -57,7 +57,7 @@ def payments(request: HttpRequest) -> HttpResponse:
     CartItem.objects.filter(user=request.user).delete()
 
     # Send order recieved email to customer
-    # pass
+    # ...
 
     # Send order number and transaction id back to sendPaymentsData function via JsonResponse
     data = {
