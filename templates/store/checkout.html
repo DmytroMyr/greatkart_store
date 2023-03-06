@@ -17,37 +17,78 @@
                             <div class="col form-group">
                                 <label for="first_name">First Name</label>
                                 <input type="text" name="first_name" class="form-control" required>
+                                {% if errors.first_name %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.first_name %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                             <div class="col form-group">
                                 <label for="last_name">Last Name</label>
                                 <input type="text" name="last_name" class="form-control" required>
+                                {% if errors.last_name %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.last_name %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="col form-group">
                                 <label for="email">Email</label>
                                 <input type="text" name="email" class="form-control" required>
+                                {% if errors.email %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.email %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                             <div class="col form-group">
                                 <label for="phone">Phone Number</label>
                                 <input type="text" name="phone" class="form-control" required>
+                                {% if errors.phone %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.phone %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="col form-group">
                                 <label for="city">City</label>
                                 <input type="text" name="city" class="form-control" required>
+                                {% if errors.city %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.city %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                             <div class="col form-group">
                                 <label for="address">Address</label>
                                 <input type="text" name="address" class="form-control" required>
+                                {% if errors.address %}
+                                <div class="invalid-feedback">
+                                    {% for error in errors.address %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="form-row">
                             <label for="comment">Comment</label>
                             <textarea name="comment" rows="2" class="form-control"></textarea>
                         </div>
-                    
                 </div>
             </div> <!-- card.// -->
         </aside> <!-- col.// -->

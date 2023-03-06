@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.core.exceptions import ValidationError
 from decimal import Decimal
 import datetime
 import json
@@ -115,6 +116,7 @@ def place_order(request: HttpRequest, total: int = 0, quantity: int = 0) -> Http
             data.save()
 
             order = Order.objects.get(user=request.user, is_ordered=False, order_number=order_number)
+
             context = {
                 'order': order,
                 'cart_items': cart_items,
@@ -124,7 +126,17 @@ def place_order(request: HttpRequest, total: int = 0, quantity: int = 0) -> Http
             }
             return render(request, 'orders/payments.html', context)
         else:
-            return HttpResponse('Form is not valid')
+            errors = form.errors.as_data()
+
+            context = {
+                'errors': errors,
+                'cart_items': cart_items,
+                'total': total,
+                'tax': '%.2f' % tax,
+                'grand_total': '%.2f' % grand_total,
+            }
+
+            return render(request, 'store/checkout.html', context)
     else:
         return redirect('home')
 
