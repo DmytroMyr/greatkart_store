@@ -108,6 +108,15 @@ def search(request: HttpRequest) -> HttpResponse:
 
 
 def submit_review(request: HttpRequest, product_id: int) -> HttpResponse:
+    """A view that handles submission of product reviews and ratings.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        product_id (int): The id of the product to review.
+
+    Returns:
+        HttpResponse: The HTTP response object.
+    """
     url = request.META.get('HTTP_REFERER')
 
     if request.method == 'POST':

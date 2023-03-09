@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
-from django.core.exceptions import ValidationError
 from decimal import Decimal
 import datetime
 import json
@@ -13,6 +12,14 @@ from store.models import Product
 
 
 def payments(request: HttpRequest) -> HttpResponse:
+    """Processes the payment for an order and saves the payment details and order details.
+
+    Args:
+        request (HttpRequest): The request object that contains metadata about the request.
+
+    Returns:
+        HttpResponse: The response object that contains the JSON data for order number and transaction ID.
+    """
     body = json.loads(request.body)
     order = Order.objects.get(user=request.user, is_ordered=False, order_number=body['orderID'])
     
@@ -70,6 +77,18 @@ def payments(request: HttpRequest) -> HttpResponse:
 
 
 def place_order(request: HttpRequest, total: int = 0, quantity: int = 0) -> HttpResponseRedirect:
+    """Places an order for items in the cart.
+
+    Args:
+        request (HttpRequest): The request object that contains metadata about the request.
+        total (int, optional): The total cost of the order. Defaults to 0.
+        quantity (int, optional): The total quantity of the order. Defaults to 0.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the home page if the cart is empty, 
+        otherwise returns a payments page if the order is successful,
+        or the checkout page with form errors if the form is invalid.
+    """
     cart_items = CartItem.objects.filter(user=request.user)
     cart_count = cart_items.count()
 
@@ -142,6 +161,19 @@ def place_order(request: HttpRequest, total: int = 0, quantity: int = 0) -> Http
 
 
 def order_complete(request: HttpRequest):
+    """Displays the order completion page after a successful payment transaction.
+
+    Args:
+        request (HttpRequest): The request object that contains metadata about the request.
+
+    Returns:
+        HttpResponse: The response object that contains the HTML page of the order completion with order and payment details.
+        
+    Raises:
+        Payment.DoesNotExist: If payment transaction does not exist.
+        Order.DoesNotExist: If order does not exist or has not been ordered.
+    """
+    
     order_number = request.GET.get('order_number')
     transID = request.GET.get('payment_id')
 

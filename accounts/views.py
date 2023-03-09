@@ -12,6 +12,14 @@ import requests
 
 
 def registration_view(request: HttpRequest) -> HttpResponse:
+    """Handle user registration requests.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The HTTP response object with the registration form.
+    """
     form = RegistrationForm(request.POST or None)
 
     if form.is_valid():
@@ -32,9 +40,17 @@ def registration_view(request: HttpRequest) -> HttpResponse:
 
 
 def login_view(request: HttpRequest) -> HttpResponse:
+    """Render login form or authenticate user and redirect to the next page.
+
+    Args:
+        request (HttpRequest): the request object sent by the client.
+
+    Returns:
+        HttpResponse: a response object containing either the login form or redirecting to the next page.
+    """
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        email: str = request.POST.get('email')
+        password: str = request.POST.get('password')
 
         user = authenticate(email=email, password=password)
 
@@ -75,7 +91,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
                                 item.user = user
                                 item.save()
             except Exception as e:
-                print(e)
+                raise e
 
             auth.login(request, user)
             url = request.META.get('HTTP_REFERER')
@@ -93,18 +109,34 @@ def login_view(request: HttpRequest) -> HttpResponse:
         else:
             messages.error(request, 'Invalid login credentials.')
             
-
     return render(request, 'accounts/login.html')
 
 
 @login_required(login_url='login')
 def logout_view(request: HttpRequest) -> HttpResponse:
+    """Logout view.
+
+    Args:
+        request (HttpRequest): HTTP request.
+
+    Returns:
+        HttpResponse: HTTP response.
+    """
     auth.logout(request)
     return redirect('/')
 
 
 @login_required(login_url='login')
 def dashboard_view(request: HttpRequest) -> HttpResponse:
+    """Dashboard view.
+
+    Args:
+        request (HttpRequest): HTTP request.
+
+    Returns:
+        HttpResponse: HTTP response.
+
+    """
     orders = Order.objects.filter(user_id=request.user.id, is_ordered=True)
     orders_count = orders.count()
     context = {
@@ -114,7 +146,16 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
 
 
 @login_required(login_url='login')
-def my_orders_view(request):
+def my_orders_view(request: HttpRequest) -> HttpResponse:
+    """My orders view.
+
+    Args:
+        request (HttpRequest): HTTP request.
+
+    Returns:
+        HttpResponse: HTTP response.
+
+    """
     orders = Order.objects.filter(user_id=request.user.id, is_ordered=True).order_by('-created_at')
 
     context = {
@@ -124,7 +165,16 @@ def my_orders_view(request):
 
 
 @login_required(login_url='login')
-def order_detail_view(request, order_id):
+def order_detail_view(request: HttpRequest, order_id: str) -> HttpResponse:
+    """Order detail view.
+
+    Args:
+        request (HttpRequest): HTTP request.
+        order_id (str): Order ID.
+
+    Returns:
+        HttpResponse: HTTP response.
+    """
     order_detail = OrderProduct.objects.filter(order__order_number=order_id)
     order = Order.objects.get(order_number=order_id)
     sub_total = 0

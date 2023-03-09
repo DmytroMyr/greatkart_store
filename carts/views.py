@@ -238,6 +238,21 @@ def cart_view(request: HttpRequest, total: int = 0, quantity: int = 0, cart_item
 
 @login_required(login_url='login')
 def checkout_view(request: HttpRequest, total: int = 0, quantity: int = 0, cart_items: list[CartItem] = None) -> HttpResponse:
+    """This function renders the checkout page and displays the total price, quantity, and the items in the cart.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        total (int): The total price of all the items in the cart. Defaults to 0.
+        quantity (int): The total quantity of all the items in the cart. Defaults to 0.
+        cart_items (list[CartItem]): The list of CartItem objects in the cart. Defaults to None.
+
+    Returns:
+        HttpResponse: The HTTP response object that contains the rendered HTML page for the checkout view.
+
+    Raises:
+        ObjectDoesNotExist: If there is no active cart for the authenticated user or guest user, 
+        then it raises the ObjectDoesNotExist exception.
+    """
     try:
         if request.user.is_authenticated:
             cart_items = CartItem.objects.filter(user=request.user, is_active=True)

@@ -5,6 +5,20 @@ from accounts.models import Account
 
 
 class Product(models.Model):
+    """Product model class
+    
+    Attributes:
+        title (CharField): A field for the title of the product.
+        slug (SlugField): A slug field to create unique product URL.
+        description (TextField): A field to describe the product.
+        price (DecimalField): A field to store the price of the product.
+        images (ImageField): A field to store product images.
+        stock (IntegerField): A field to store the stock quantity of the product.
+        is_available (BooleanField): A field to mark if the product is available or not.
+        category (ForeignKey): A foreign key reference to the category the product belongs to.
+        created_date (DateTimeField): A field to store the date and time the product was created.
+        modified_date (DateTimeField): A field to store the date and time the product was last modified.
+    """
     title = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True)
     description = models.TextField(max_length=500, blank=True)
@@ -17,7 +31,7 @@ class Product(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
     def get_url(self) -> str:
-        """Getting product url"""
+        """Returns the URL of the product."""
         
         return reverse('product_detail', args=[self.category.slug, self.slug])
 
@@ -26,20 +40,31 @@ class Product(models.Model):
     
 
 class VariationManager(models.Manager):
+    """Django variations model manager"""
     def colors(self):
+        """Returns a queryset of color variations of a product."""
         return super(VariationManager, self).filter(category='color', is_active=True)
     
     def sizes(self):
+        """Returns a queryset of size variations of a product."""
         return super(VariationManager, self).filter(category='size', is_active=True)
 
 
-VARIATIONS_CATEGORY_CHOICES = (
-    ('color', 'color'),
-    ('size', 'size'),
-)
-
-
 class Variations(models.Model):
+    """Variations model class
+    
+    Attributes:
+        product (ForeignKey): A foreign key reference to the product for which the variation is being added.
+        category (CharField): A field to store the category of the variation (e.g., color, size).
+        value (CharField): A field to store the value of the variation (e.g., red, large).
+        is_active (BooleanField): A field to mark if the variation is active or not.
+        created_date (DateTimeField): A field to store the date and time the variation was created.
+    """
+    VARIATIONS_CATEGORY_CHOICES = (
+        ('color', 'color'),
+        ('size', 'size'),
+    )
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     category = models.CharField(max_length=100, choices=VARIATIONS_CATEGORY_CHOICES)
     value = models.CharField(max_length=100)
@@ -57,6 +82,19 @@ class Variations(models.Model):
 
 
 class ReviewRating(models.Model):
+    """Review rating model class.
+
+    Attributes:
+        product (ForeignKey): A foreign key reference to the product for which the review is being added.
+        user (ForeignKey): A foreign key reference to the user who added the review.
+        subject (CharField): A field to store the subject of the review.
+        review (TextField): A field to store the review text.
+        rating (FloatField): A field to store the rating given by the user.
+        ip (CharField): A field to store the IP address of the user who added the review.
+        status (BooleanField): A field to mark if the review is active or not.
+        created_at (DateTimeField): A field to store the date and time the review was created.
+        updated_at (DateTimeField): A field to store the date and time the review was last modified.
+    """
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
     subject = models.CharField(max_length=100, blank=True)

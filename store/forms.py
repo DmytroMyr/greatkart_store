@@ -3,6 +3,7 @@ from .models import ReviewRating
 
 
 class ReviewForm(forms.ModelForm):
+    """Review form model."""
     class Meta:
         model = ReviewRating
         fields = ('subject', 'review', 'rating')

@@ -3,7 +3,22 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, username, email, password=None):
+    """Django custom user model manager."""
+
+    def create_user(self, username: str, email: str, password: str = None) -> User:
+        """Create and save a new user with the given email, username, and password.
+
+        Args:
+            username (str): The username of the user.
+            email (str): The email address of the user.
+            password (str, optional): The password of the user. Defaults to None.
+
+        Raises:
+            ValueError: If the email or username is not provided.
+
+        Returns:
+            User: The newly created user object.
+        """
         if not email:
             raise ValueError('User must have an email address.')
         
@@ -20,7 +35,17 @@ class MyAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, username, email, password=None):
+    def create_superuser(self, username: str, email: str, password: str = None) -> User:
+        """Create and save a new superuser with the given email, username, and password.
+
+        Args:
+            username (str): The username of the superuser.
+            email (str): The email address of the superuser.
+            password (str, optional): The password of the superuser. Defaults to None.
+
+        Returns:
+            User: The newly created superuser object.
+        """
         user: User = self.create_user(
             email = self.normalize_email(email),
             username = username,
@@ -36,6 +61,20 @@ class MyAccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
+    """A custom user model that uses email as the unique identifier instead of username.
+
+    Attributes:
+        username (str): The username of the user.
+        email (str): The email address of the user.
+        date_joined (datetime): The datetime when the user was created.
+        last_login (datetime): The datetime when the user last logged in.
+        is_staff (bool): Whether the user is a staff member.
+        is_active (bool): Whether the user account is active.
+        is_superuser (bool): Whether the user is a superuser.
+        USERNAME_FIELD (str): The field used as the unique identifier for the user.
+        REQUIRED_FIELDS (list): The list of required fields for creating a user.
+
+    """
     username = models.CharField(max_length=50, unique=True)
     email = models.CharField(max_length=100, unique=True)
 
@@ -50,7 +89,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     objects = MyAccountManager()
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.email
     
     class Meta:
