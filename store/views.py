@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator, Page
 from django.db.models import Q, QuerySet
+from decimal import Decimal as D
 from typing import Optional
 from .models import Product, ReviewRating
 from .forms import ReviewForm
@@ -28,6 +29,10 @@ def get_paged_product(request: HttpRequest, products: QuerySet) -> Page:
     return paginator.get_page(page)
 
 
+def get_highest_price(products: QuerySet) -> int:
+    return int(products.order_by('-price').first().price)
+
+
 def store(request: HttpRequest, category_slug: Optional[str] = None) -> HttpResponse:
     """View function for the store page.
 
@@ -52,6 +57,7 @@ def store(request: HttpRequest, category_slug: Optional[str] = None) -> HttpResp
     context = {
         'products': get_paged_product(request, products),
         'product_count': product_count,
+        'prices': list(range(0, get_highest_price(Product.objects.all()), 100)),
     }
 
     return render(request, 'store/store.html', context)
@@ -83,7 +89,7 @@ def product_detail(request: HttpRequest, category_slug: str, product_slug: str) 
 
 
 def search(request: HttpRequest) -> HttpResponse:
-    """View function that handles a search request and returns a filtered list of products based on the provided keyword.
+    """View function that handles a search request and returns a filtered list of products based on the provided keyword and price range.
 
     Args:
         request (HttpRequest): HTTP request object.
@@ -91,19 +97,31 @@ def search(request: HttpRequest) -> HttpResponse:
     Returns:
         HttpResponse: HTTP response object with rendered search results page.
     """
+    keyword = ''
+    min_price = 0
+    max_price = get_highest_price(Product.objects.all())
+
     if 'keyword' in request.GET:
         keyword = request.GET.get('keyword').strip()
 
+    if 'min_price' in request.GET:
+        min_price = D(request.GET.get('min_price', 0)) 
+        max_price = D(request.GET.get('max_price', 0))
+
+    if min_price > max_price:
+        raise ValueError("Min price should be less then max price")
+
     products = Product.objects.filter(Q(description__icontains=keyword) |
                                       Q(title__icontains=keyword) |
-                                      Q(category__title__icontains=keyword)).order_by('-created_date')
+                                      Q(category__title__icontains=keyword) & 
+                                      Q(price__range=(min_price, max_price))).order_by('-created_date')
     product_count = products.count()
 
     context = {
         'products': get_paged_product(request, products),
         'product_count': product_count,
+        'prices': list(range(0, get_highest_price(Product.objects.all()), 100)),
     }
-
     return render(request, 'store/store.html', context)
 
 
