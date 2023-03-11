@@ -197,7 +197,7 @@ def remove_cart_item(request: HttpRequest, product_id: int, cart_item_id: int) -
     return redirect('cart')
 
 
-def cart_view(request: HttpRequest, total: int = 0, quantity: int = 0, cart_items: list[CartItem] = None) -> HttpResponse:
+def cart_view(request: HttpRequest, total: int = 0, quantity: int = 0) -> HttpResponse:
     """
     Display the contents of the cart.
 
@@ -205,7 +205,6 @@ def cart_view(request: HttpRequest, total: int = 0, quantity: int = 0, cart_item
         request (HttpRequest): The HTTP request object.
         total (int, optional): The total cost of the items in the cart. Defaults to 0.
         quantity (int, optional): The total quantity of items in the cart. Defaults to 0.
-        cart_items (List[CartItem], optional): The list of cart items. Defaults to None.
 
     Returns:
         HttpResponse: The rendered cart page.
