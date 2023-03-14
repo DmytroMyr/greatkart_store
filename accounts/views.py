@@ -91,7 +91,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
                                 item.user = user
                                 item.save()
             except Exception as e:
-                raise e
+                print(e)
 
             auth.login(request, user)
             url = request.META.get('HTTP_REFERER')

@@ -30,7 +30,20 @@ def get_paged_product(request: HttpRequest, products: QuerySet) -> Page:
 
 
 def get_highest_price(products: QuerySet) -> int:
-    return int(products.order_by('-price').first().price)
+    """Returns the highest price among the products in the given QuerySet.
+
+    Args:
+        products (QuerySet): A QuerySet of products.
+
+    Returns:
+        int: The highest price among the products. If there are no products or if
+            all products have no price value, returns 0.
+    """
+    highest_price = 0
+    highest_price_product = products.order_by('-price').first()
+    if highest_price_product and highest_price_product.price:
+        highest_price = int(highest_price_product.price)
+    return highest_price
 
 
 def store(request: HttpRequest, category_slug: Optional[str] = None) -> HttpResponse:
