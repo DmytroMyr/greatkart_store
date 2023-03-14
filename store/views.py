@@ -43,7 +43,7 @@ def get_highest_price(products: QuerySet) -> int:
     highest_price_product = products.order_by('-price').first()
     if highest_price_product and highest_price_product.price:
         highest_price = int(highest_price_product.price)
-    return highest_price
+    return highest_price + 100
 
 
 def store(request: HttpRequest, category_slug: Optional[str] = None) -> HttpResponse:
@@ -124,9 +124,9 @@ def search(request: HttpRequest) -> HttpResponse:
     if min_price > max_price:
         raise ValueError("Min price should be less then max price")
 
-    products = Product.objects.filter(Q(description__icontains=keyword) |
+    products = Product.objects.filter((Q(description__icontains=keyword) |
                                       Q(title__icontains=keyword) |
-                                      Q(category__title__icontains=keyword) & 
+                                      Q(category__title__icontains=keyword)) & 
                                       Q(price__range=(min_price, max_price))).order_by('-created_date')
     product_count = products.count()
 
